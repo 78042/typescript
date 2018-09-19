@@ -9,9 +9,16 @@ enum status_ {
 }
 const _enum:status_ = status_.success;
 var num:number|undefined;
-const fn = function():number {
+//函数类型
+const fn = function(num:number):number {
 	return 1;
 }
+//完整函数类型(nn和返回值可以不用指定类型了，TypeScript编译器会自动识别出类型)
+const fullFn: (n:number) => number = function (nn) {
+	return 1;
+}
+
+//重载
 function get(name:string, num?:number):string {
 	return 'a'
 }
@@ -35,7 +42,7 @@ arr_ = ['asd','ad']
 interface encrypt {
 	(key:string,value:string):string;
 }
-let imp:encrypt;
+let imp:encrypt;//允许创建一个对接口类型的引用
 imp = function(k:string,v:string) {//接口已经指定了返回类型，参数名无需一样
 	return 'asd';
 }
@@ -89,7 +96,7 @@ class Dog implements Animal {
 }
 
 const dog = new Dog('哈士奇',new Date());
-dog.eat('asd')
+//dog.eat('asd')
 
 //检测是否有传入需要的参数（严格出入就是要是用interface）
 function ts(obj: { param1: string}) {
@@ -147,3 +154,52 @@ const sub = <Sub>{};//必须这么写
 sub.num1 = 1;
 sub.num2 = 1;
 sub.name = 'a';
+
+//抽象类abstract(抽象类中的抽象方法不包含具体实现并且必须在派生类中实现,不能创建一个抽象类的实例)
+abstract class Animal1 {
+	abstract eat() :void;
+	move(): void {
+		console.log(1)
+	}
+}
+class Animal1abstract extends Animal1 {
+	eat() {
+		console.log(1)
+	}
+	brak() {
+
+	}
+}
+let fish: Animal1; // 允许创建一个对抽象类型的引用
+//Animal1 = new Animal1(); // 错误: 不能创建一个抽象类的实例
+fish = new Animal1abstract(); // 允许对一个抽象子类进行实例化和赋值
+fish.eat();
+fish.move();
+//fish.brak(); // 错误: 方法在声明的抽象类中不存在
+
+//this在ts中运用
+interface Card {
+    suit: string;
+    card: number;
+}
+interface Deck {
+    suits: string[];
+    cards: number[];
+    createCardPicker(this: Deck): () => Card;
+}
+let deck: Deck = {
+    suits: ["hearts", "spades", "clubs", "diamonds"],
+    cards: Array(52),
+    createCardPicker: function(this: Deck) {
+        return () => {
+            let pickedCard = Math.floor(Math.random() * 52);
+            let pickedSuit = Math.floor(pickedCard / 13);
+
+            return {suit: this.suits[pickedSuit], card: pickedCard % 13};
+        }
+    }
+}
+
+let cardPicker = deck.createCardPicker();
+let pickedCard = cardPicker();
+//alert("card: " + pickedCard.card + " of " + pickedCard.suit);
